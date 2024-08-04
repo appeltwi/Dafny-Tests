@@ -1,11 +1,12 @@
-function isEven(a: int): bool
-    requires a >= 0
+function isEven(a: nat): bool
 {
     a % 2 == 0
 }
 
-function exp(x: int, n: int): int
-    requires n >= 0
+type EvenInt = x: nat | isEven(x) witness 2
+type OddInt = x: nat | !isEven(x) witness 3
+
+function exp(x: nat, n: nat): int
 {
     if n == 0 then 
         1
@@ -13,10 +14,8 @@ function exp(x: int, n: int): int
         x * exp(x, n-1)
 }
 
-method Factor(n: int) returns (q: int, e: int)
+method Factor(n: OddInt) returns (q: nat, e: nat)
 requires n >= 3
-requires !isEven(n)
-ensures e >= 0
 ensures n == q * exp(2, e) + 1
 ensures q >= 1
 ensures !isEven(q)
