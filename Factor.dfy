@@ -6,23 +6,12 @@ predicate isEven(a: nat)
 type EvenInt = x: nat | isEven(x) witness 2
 type OddInt = x: nat | !isEven(x) witness 3
 
-function gcd(a: nat, b: nat): nat
-  requires a > 0 && b > 0
-{
-  if a == b
-    then a
-  else if a < b
-    then gcd(a, b-a)
-  else gcd(a-b, b)
-}
-
-predicate divider(a: nat, b:nat, k :nat)
+predicate divider(a: nat, b:int, k :nat)
 {
     b == k * a
 }
 
-ghost predicate divides(a: nat, b:nat)
-    requires a > 0
+ghost predicate divides(a: nat, b:int)
 {
     exists k: nat :: divider(a, b, k) 
 }
@@ -34,7 +23,7 @@ ghost predicate prime(p: nat)
 
 type PrimeInt = x: nat | prime(x) witness 3
 
-function exp(x: nat, n: nat): int
+function exp(x: nat, n: nat): nat
 {
     if n == 0 then 
         1
@@ -69,6 +58,7 @@ lemma EvenNumberIsDivisibleByTwoIndirect(n : nat)
          assert(!divides(2, n)); 
          var k := n / 2; // wittness
          assert(!divider(2, n, k));
+         assert(!isEven(n));
     }
 }
 
@@ -95,3 +85,4 @@ lemma PrimeNumbersAreOdd(p: nat)
         assert(!prime(p));
     }
 }
+
