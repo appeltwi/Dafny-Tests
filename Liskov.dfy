@@ -53,6 +53,7 @@ class Rectangle extends IRectangle
   } 
 }
 
+// next class will not verify
 // class Square extends ISquare
 // {
 //    var x: nat     
@@ -97,14 +98,6 @@ modifies Square
     Square.SetY(20);   
     assert(Square.Height() == 20 && Square.Width() == 10);
     assert(!Square.Valid());
-}
-
-method TestBox()
-{
-    var myShapes: seq<IRectangle>;
-    var A := new Rectangle;
-    var B := new Square; // Square is a subtype of Rectangle
-    myShapes := [A, B];
 }
 
 type Arrow<-X, +Y> = X -> Y
