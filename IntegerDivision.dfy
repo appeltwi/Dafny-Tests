@@ -41,6 +41,20 @@ lemma congruencems(x: int, n: int)
     }
  }
 
+ lemma multhelp1(a: int, b: int, c: int)
+    requires c > 0
+    ensures a < b ==> c * a < c *b
+ {
+
+ }
+
+  lemma multhelp2(a: int, b: int, c: int)
+    requires c > 0
+    ensures a > b ==> c * a > c *b
+ {
+
+ }
+
  lemma congruencem(a: int, b: int)
     requires b > 0
      ensures a % b == (a - b) % b
@@ -55,7 +69,8 @@ lemma congruencems(x: int, n: int)
     assert(a % b - y % b == b - a / b * b + y / b * b);   
     assert(a % b - y % b == b * (1- a / b + y / b));  
     assert(-b < b * (1- a / b + y / b) < b);
-    assert(false);
+    multhelp1((1- a / b + y / b), b, b);
+    multhelp2((1- a / b + y / b), -b, b);    
     assert(-1 < (1- a / b + y / b) < 1);    
  }
 
