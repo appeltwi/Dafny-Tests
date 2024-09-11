@@ -79,3 +79,80 @@ lemma remainder_test(x: nat, n: nat)
         } 
     }
 }
+
+opaque function pow(x: int, n: int): int
+    requires n >= 0
+{
+    if n == 0 then 
+        1  
+    else 
+        x * pow(x, n-1)
+}
+
+method largest_doubling(a: int, b: int) returns (r: int, k: int)
+    requires a >= b 
+    requires b >0
+    ensures k >= 0
+    ensures r == pow(2, k) * b
+    ensures r <= a < 2 * r 
+{
+    //r := b * 2;
+    //k := 1;
+    r:= b;
+    k := 0;
+    assert( pow(2, k) * b == r)  by { reveal pow(); }
+    assert(a >= r);
+    while (2 * r <= a)
+        invariant r == pow(2, k) * b
+        invariant a >= r
+    {
+        reveal pow();
+        r, k := 2 * r, k + 1;      
+    }
+}
+
+lemma congruencems2(x: int, n: int, k: int)
+ requires k > 0
+ requires n > 0
+ requires x >= k * n + n
+ ensures slow_remainder(x, n) == slow_remainder(x - k * n, n)
+ {
+    if (k == 1)
+    {
+        congruencems(x, n);
+    }
+    else
+    {
+        calc
+        {
+            slow_remainder(x - k * n, n); 
+            slow_remainder(x -  (k - 1) * n - n, n);             
+            { congruencems(x - (k - 1) * n, n); }                           
+            slow_remainder(x - (k - 1) * n, n); 
+           { congruencems2(x, n, k -1); }   
+           slow_remainder(x, n);  
+        }
+    }
+ }
+
+// method fast_remainder(a: int, b: int) returns (r: int)
+//     requires a >= b 
+//     requires b > 0
+//     ensures r == slow_remainder(a, b)
+// {
+//     var c, k := largest_doubling(a, b);
+//     assert(c == pow(2, k) * b);  
+//     r := a - c; // a = a - pow(2, k) * b
+//     reveal slow_remainder();
+//     assert(slow_remainder(a, b) == slow_remainder(r, b));
+//     while(k > 1)
+//         decreases k
+//     {
+//         c := c / 2;
+//         k := k - 1;         
+//         if (c <= a)
+//         {
+//             r := r - c;
+//         }
+//     }
+// }
