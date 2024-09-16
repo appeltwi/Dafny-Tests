@@ -1,11 +1,11 @@
-opaque function slow_remainder(x: int, n: nat): (int)
-    requires n > 0
-    decreases x
+opaque function slow_remainder(a: int, b: nat): (int)
+    requires b > 0
+    decreases a
 {
-    if x < n then 
-        x
+    if a < b then 
+        a
     else 
-        slow_remainder(x - n, n)
+        slow_remainder(a - b, b)
 }
 
 lemma congruencems(x: int, n: int)
@@ -132,6 +132,37 @@ lemma congruencems2(a: int, b: int, k: int)
     }
  }
 
+ lemma AssociativityLaw(x: int, n: int, m: int)
+  requires npos: n >= 0
+  requires mpos: m >= 0
+  ensures pow(x, n + m) == pow(x, n) * pow(x, m)
+{	  
+    if (m == 0)
+    {
+        reveal npos;
+        assert(pow(x, n + 0) == pow(x,n) * pow(x, 0)) by 
+        {
+            reveal pow();
+        }
+    } 
+    else
+    {
+        reveal npos; 
+        reveal mpos;        
+        calc 
+        {                                
+            pow(x, n + m);                
+            pow(x, n + m - 1 + 1);            
+            { reveal pow(); }
+            pow(x, n + m - 1) * x;  
+            { AssociativityLaw(x, n, m - 1);}
+            pow(x, n) * pow(x, m - 1) * x;   
+            { reveal pow(); }
+            pow(x, n) * pow(x, m);                   
+        }
+    }
+}
+
 method fast_remainder(a: int, b: int) returns (r: int)
     requires a >= 0
     requires b > 0
@@ -145,24 +176,39 @@ method fast_remainder(a: int, b: int) returns (r: int)
     else // a >= b
     {
         var c, k := largest_doubling(a, b);
-        assert(c == pow(2, k) * b);  
-        assert(c <= a < 2 * c );
-        assert(pow(2, k) * b <= a < pow(2, k + 1) * b) by {reveal pow();}               
-        r := a - c; // a = a - pow(2, k) * b
-        assert(0 <= r < c );   
-        assert(0 <= r < pow(2, k) * b );       
-        assert(a == pow(2, k) * b + r);
-        while(k > 1)
+        assert(c == pow(2, k) * b);          
+        assert(c <= a < 2 * c );             
+        r := a - c; 
+        assert(r == a - pow(2, k) * b);
+        assert(0 <= r < c );         
+        assert(r == slow_remainder(a, c)) by {reveal slow_remainder();}   
+        assert(r == slow_remainder(r, c)) by {reveal slow_remainder();}      
+        assert(slow_remainder(a, c) == slow_remainder(r, c));                     
+        while(k > 0)
             decreases k 
             invariant c == pow(2, k) * b
-        {        
-            assert(pow(2, k) * b == pow(2, k - 1) * 2 * b) by {reveal pow();}                 
-            c, k := c / 2, k -1;     
-            if (c <= r)
+            invariant c > 0
+            invariant r == slow_remainder(r, c)
+            invariant slow_remainder(r, c) == slow_remainder(a, c)
+            invariant 0 <= r < c  
+        {   
+            assert(c / 2 == pow(2, k - 1) * b) by {reveal pow(); AssociativityLaw(2, k -1 , 1);}  
+            assert(c / 2 + c / 2 == c) by {reveal pow();}  
+            c, k := c / 2, k -1;
+            if (c > r)
+            {     
+                assert(slow_remainder(r, c) == r )by {reveal slow_remainder();}                       
+            }
+            else 
             {
                 r := r - c;
-            }
+                assert(slow_remainder(r, c) == r) by {reveal slow_remainder();}  
+            }              
         }
-        assert(r == slow_remainder(a, b)) by {reveal slow_remainder();}    
+        assert(k == 0);
+        assert(c == pow(2, k) * b) by {reveal pow();}   
+        assert(pow(2, 0) == 1 )  by {reveal pow();}   
+        assert(c == b);
+        assert(r == slow_remainder(a, b));
     }
 }
