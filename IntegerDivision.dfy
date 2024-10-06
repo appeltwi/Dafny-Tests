@@ -163,6 +163,27 @@ lemma congruencems2(a: int, b: int, k: int)
     }
 }
 
+method remainder_recursive(a: int, b: int) returns (r: int)
+ requires a >= b
+ requires b > 0
+ decreases a - 2*b
+{
+    r:= a;
+    if (r >= 2 * b)
+    {
+        r:= remainder_recursive(r, 2 *b);     
+        if (r >= b)
+        {
+            r:= r- b;
+        }
+    }
+    else
+    {
+        r:= r-b;
+    }
+    return r;
+}
+
 method fast_remainder(a: int, b: int) returns (r: int)
     requires a >= 0
     requires b > 0
