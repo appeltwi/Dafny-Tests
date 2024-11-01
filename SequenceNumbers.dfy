@@ -14,15 +14,9 @@ method Max(a: int, b:int) returns (c: int)
 
 type byte = x | 0 <= x < 256
 
-
 predicate BitVector_Less(bi1: byte, bi2:byte)
 {
     (bi1 < bi2 && (bi2 - bi1) < 128) || (bi1 > bi2 && (bi1 - bi2) > 128)
-}
-
-function abs(x: int): int
-{
-	if x < 0 then -x else x
 }
 
 datatype Option<+T> = Nil | Some(Data: T)
@@ -37,10 +31,14 @@ method MinMax(i1: byte, i2:byte) returns (Min: Option<byte>, Max: Option<byte>)
     {
         Max, Min := Some(i2), Some(i1);
 	} 
-    else if (BitVector_Less(i2, i1) || i2 == i1)
+    else if (BitVector_Less(i2, i1))
     {
         Max, Min := Some(i1), Some(i2);
 	}
+    else if (i2 == i1)
+    {
+        Max, Min := Some(i1), Some(i2);
+    }
     else
     {
         Max, Min:= Nil, Nil;
@@ -48,9 +46,9 @@ method MinMax(i1: byte, i2:byte) returns (Min: Option<byte>, Max: Option<byte>)
 }
 
 method MinMax2(i1: byte, i2:byte) returns (Min: byte, Max: byte)
-    requires BitVector_Less(i1, i2) || BitVector_Less(i2, i1) || i2 == i1
 	ensures BitVector_Less(i1, i2) ==> Max == (i2 % 256) as byte && Min == (i1 % 256) as byte 
-	ensures (BitVector_Less(i2, i1) || i2 == i1) ==> Max == (i1 % 256) as byte && Min == (i2 % 256) as byte
+	ensures BitVector_Less(i2, i1) ==> Max == (i1 % 256) as byte && Min == (i2 % 256) as byte
+    ensures (!BitVector_Less(i1, i2) && !BitVector_Less(i2, i1)) ==> Max == (i1 % 256) as byte && Min == (i2 % 256) as byte
 {
 	if (BitVector_Less(i1, i2)) 
     {
@@ -69,17 +67,9 @@ method SequenceNumberMinMax(i1: nat, i2:nat) returns (Min: byte, Max: byte)
 {
     var bi1 := (i1 % 256) as byte;
     var bi2 := (i2 % 256) as byte;
-    var MinOpt, MaxOpt := MinMax(bi1, bi2);
-    if (MinOpt.Some? && MaxOpt.Some?)
-    {
-        Max, Min := MaxOpt.Data, MinOpt.Data;
-    }
-    else
-    {
-        Max, Min := bi1, bi2;
-    }
+    var MinOpt2, MaxOpt2 := MinMax2(bi1, bi2);    
+    Max, Min := MaxOpt2, MinOpt2;
 }
-
 
 method TestMax()
 {
