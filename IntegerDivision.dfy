@@ -89,25 +89,6 @@ opaque function pow(x: int, n: int): int
         x * pow(x, n-1)
 }
 
-method largest_doubling(a: int, b: int) returns (r: int, k: int)
-    requires a >= b
-    requires b > 0
-    ensures k >= 0
-    ensures r == pow(2, k) * b
-    ensures r <= a < 2 * r 
-{
-    r := b;
-    k := 0;
-    assert( pow(2, k) * b == r)  by { reveal pow(); }
-    while (a >= 2 * r)
-        invariant r == pow(2, k) * b
-        invariant a >= r
-    {
-        reveal pow();
-        r, k := 2 * r, k + 1;      
-    }
-}
-
 lemma congruencems2(a: int, b: int, k: int)
  requires k > 0
  requires b > 0
@@ -163,31 +144,10 @@ lemma congruencems2(a: int, b: int, k: int)
     }
 }
 
-method remainder_recursive(a: int, b: int) returns (r: int)
- requires a >= b
- requires b > 0
- decreases a - 2*b
-{
-    r:= a;
-    if (r >= 2 * b)
-    {
-        r:= remainder_recursive(r, 2 *b);     
-        if (r >= b)
-        {
-            r:= r- b;
-        }
-    }
-    else
-    {
-        r:= r-b;
-    }
-    return r;
-}
 
 method fast_remainder(a: int, d: int) returns (r: int)
     requires a >= 0
     requires d > 0
-    requires a > d
     ensures r == slow_remainder(a, d)
 {
     if (a < d)
