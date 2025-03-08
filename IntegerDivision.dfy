@@ -54,7 +54,7 @@ lemma congruencems(x: int, n: int)
 
 
 
-lemma remainder_test(x: nat, n: nat)
+lemma remainder_check(x: nat, n: nat)
     requires P: n > 0
     ensures  x % n == slow_remainder(x,n)
 {
@@ -63,7 +63,7 @@ lemma remainder_test(x: nat, n: nat)
     {
         assert(x % n == slow_remainder(x,n))  by { reveal slow_remainder(); }
     }
-    else // x >= n
+    else
     {
         reveal P;
         var k := x / n;
@@ -72,7 +72,7 @@ lemma remainder_test(x: nat, n: nat)
             x % n;        
            {  congruencem(x, n); reveal P; }                     
             (x - n) % n;  
-           { remainder_test(x - n, n); }    
+           { remainder_check(x - n, n); }    
             slow_remainder(x - n, n);       
            { congruencems(x, n); }   
            slow_remainder(x, n);                                                                           
@@ -112,38 +112,6 @@ lemma congruencems2(a: int, b: int, k: int)
         }
     }
  }
-
- lemma AssociativityLaw(x: int, n: int, m: int)
-  requires npos: n >= 0
-  requires mpos: m >= 0
-  ensures pow(x, n + m) == pow(x, n) * pow(x, m)
-{	  
-    if (m == 0)
-    {
-        reveal npos;
-        assert(pow(x, n + 0) == pow(x,n) * pow(x, 0)) by 
-        {
-            reveal pow();
-        }
-    } 
-    else
-    {
-        reveal npos; 
-        reveal mpos;        
-        calc 
-        {                                
-            pow(x, n + m);                
-            pow(x, n + m - 1 + 1);            
-            { reveal pow(); }
-            pow(x, n + m - 1) * x;  
-            { AssociativityLaw(x, n, m - 1);}
-            pow(x, n) * pow(x, m - 1) * x;   
-            { reveal pow(); }
-            pow(x, n) * pow(x, m);                   
-        }
-    }
-}
-
 
 method fast_remainder(a: int, d: int) returns (r: int)
     requires a >= 0
