@@ -111,7 +111,7 @@ method largest_doubling(a: int, b: int) returns (r: int, k: int)
 lemma congruencems2(a: int, b: int, k: int)
  requires k > 0
  requires b > 0
- requires a >= k *b + b
+ requires a >= k * b 
  ensures slow_remainder(a, b) == slow_remainder(a - k * b, b)
  {
     if (k == 1)
@@ -184,52 +184,58 @@ method remainder_recursive(a: int, b: int) returns (r: int)
     return r;
 }
 
-method fast_remainder(a: int, b: int) returns (r: int)
+method fast_remainder(a: int, d: int) returns (r: int)
     requires a >= 0
-    requires b > 0
-    ensures r == slow_remainder(a, b)
+    requires d > 0
+    requires a > d
+    ensures r == slow_remainder(a, d)
 {
-    if (a < b)
+    if (a < d)
     {
         r:= a;
-        assert(r == slow_remainder(a, b)) by {reveal slow_remainder();}        
+        assert(r == slow_remainder(a, d)) by {reveal slow_remainder();}        
     }
-    else // a >= b
+    else 
     {
-        var c, k := largest_doubling(a, b);
-        assert(c == pow(2, k) * b);          
-        assert(c <= a < 2 * c );             
-        r := a - c; 
-        assert(r == a - pow(2, k) * b);
-        assert(0 <= r < c );         
-        assert(r == slow_remainder(a, c)) by {reveal slow_remainder();}   
-        assert(r == slow_remainder(r, c)) by {reveal slow_remainder();}      
-        assert(slow_remainder(a, c) == slow_remainder(r, c));                     
-        while(k > 0)
-            decreases k 
-            invariant c == pow(2, k) * b
-            invariant c > 0
-            invariant r == slow_remainder(r, c)
-            invariant slow_remainder(r, c) == slow_remainder(a, c)
-            invariant 0 <= r < c  
-        {   
-            assert(c / 2 == pow(2, k - 1) * b) by {reveal pow(); AssociativityLaw(2, k -1 , 1);}  
-            assert(c / 2 + c / 2 == c) by {reveal pow();}  
-            c, k := c / 2, k -1;
-            if (c > r)
-            {     
-                assert(slow_remainder(r, c) == r )by {reveal slow_remainder();}                       
-            }
-            else 
+        r := a;
+        var k := 0;  
+        while(r >= d)
+        invariant a - r == k * d
+        invariant a >= k *d
+        invariant r >= 0
+        decreases r   
+        invariant slow_remainder(r, d) == slow_remainder(a -  k * d , d)
+        {
+
+            assert(a - r == k * d );
+            r:= r - d;
+            assert(a - r - d == k * d );        
+            k := k + 1;              
+
+            var dd, c:= d + d, 1 + 1; 
+            while(r >= dd)
+                decreases r       
+                invariant dd == c * d  
+                invariant a - r == k * d 
+                invariant k >= 0
+                invariant r >= 0
             {
-                r := r - c;
-                assert(slow_remainder(r, c) == r) by {reveal slow_remainder();}  
-            }              
+                assert(a - r == k * d );
+                r:= r - dd;
+                assert(a - r - dd == k * d );        
+                k := k + c;            
+                assert(a - r - dd == (k - c) * d );
+                dd, c:= dd + dd, c + c;
+                assert(a - r - dd / 2 == (k - c / 2) * d );         
+                assert(a - r  == k * d - c * d /2  + dd / 2);                 
+            } 
         }
-        assert(k == 0);
-        assert(c == pow(2, k) * b) by {reveal pow();}   
-        assert(pow(2, 0) == 1 )  by {reveal pow();}   
-        assert(c == b);
-        assert(r == slow_remainder(a, b));
+        assert(r == slow_remainder(a -  k * d , d)) by {reveal slow_remainder();}      
+        calc
+            {
+                r == slow_remainder(a -  k * d , d);          
+                {congruencems2(a, d, k); } 
+                r == slow_remainder(a, d);                          
+            }
     }
 }
