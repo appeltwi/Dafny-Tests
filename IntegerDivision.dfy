@@ -126,7 +126,7 @@ method fast_remainder(a: int, d: int) returns (r: int)
     else 
     {
         r := a;
-        var k := 0;  
+        ghost var k := 0;  
         while(r >= d)
         invariant a - r == k * d
         invariant a >= k *d
@@ -134,28 +134,20 @@ method fast_remainder(a: int, d: int) returns (r: int)
         decreases r   
         invariant slow_remainder(r, d) == slow_remainder(a -  k * d , d)
         {
-
-            assert(a - r == k * d );
+            //assert(a - r == k * d );
             r:= r - d;
-            assert(a - r - d == k * d );        
+            //assert(a - r - d == k * d );        
             k := k + 1;              
-
             var dd, c:= d + d, 1 + 1; 
             while(r >= dd)
-                decreases r       
+                decreases r    
                 invariant dd == c * d  
                 invariant a - r == k * d 
-                invariant k >= 0
                 invariant r >= 0
+                invariant dd > 0
             {
-                assert(a - r == k * d );
-                r:= r - dd;
-                assert(a - r - dd == k * d );        
-                k := k + c;            
-                assert(a - r - dd == (k - c) * d );
-                dd, c:= dd + dd, c + c;
-                assert(a - r - dd / 2 == (k - c / 2) * d );         
-                assert(a - r  == k * d - c * d /2  + dd / 2);                 
+                r, k := r - dd, k + c;   
+                dd, c:= 2 * dd, 2 * c;
             } 
         }
         assert(r == slow_remainder(a -  k * d , d)) by {reveal slow_remainder();}      
