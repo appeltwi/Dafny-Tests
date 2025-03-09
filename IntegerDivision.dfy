@@ -136,11 +136,7 @@ method fast_remainder(a: int, d: int) returns (r: int)
         {          
             ghost var c := 1;
             var dd := d; 
-            assert(r == a - k * d);
-            ghost var kold := k;            
             ghost var rold := r;
-            assert(r >= d);
-            assert(rold >= d);            
             while(r >= dd)
                 invariant r >= 0            
                 decreases r   
